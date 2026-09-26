@@ -17,7 +17,7 @@ html,body{height:100%;margin:0;background:#eef3f6;font-family:system-ui,-apple-s
 </head>
 <body>
 <div id="notice" class="notice"></div>
-<iframe id="app" src="legacy-planner.html?v=20260926-liveflow1" title="BOOST Module 5 Career Investment Explorer"></iframe>
+<iframe id="app" src="legacy-planner.html?v=20260926-liveflow2" title="BOOST Module 5 Career Investment Explorer"></iframe>
 <div id="dock" class="dock">
   <div><b id="dockTitle">Career investment plan saved</b><br><small id="dockText">Your training research and investment evidence are ready to carry forward.</small></div>
   <div class="actions"><button id="returnBtn" style="display:none">Save Results & Return to BOOST</button></div>
@@ -65,6 +65,27 @@ function evidence(s){
 function patchPlanner(){
   const d=iframe.contentDocument,w=iframe.contentWindow,s=state();
   if(!d||!w||!s?.module4)return;
+  if(!w.__BOOST_M5_BRIDGE__){
+    const bridge=d.createElement('script');
+    bridge.textContent=`
+      window.__BOOST_M5_BRIDGE__={
+        findOccupation:function(soc,title){
+          var bySoc=H3.find(function(o){return String(o.soc||'')===String(soc||'')});
+          if(bySoc)return bySoc;
+          var t=String(title||'').toLowerCase();
+          return H3.find(function(o){return String(o.title||'').toLowerCase()===t}) || (typeof searchOccupations==='function' ? searchOccupations(title||'')[0] : null);
+        },
+        select:function(o){return selectOccupation(o)},
+        selected:function(){return selectedOccupation},
+        compared:function(){return Array.from(compareIds||[])},
+        plan:function(){return typeof selectedPlanProgram==='function'?selectedPlanProgram():null},
+        funding:function(o,p){return fundingFor(o,p)},
+        pathway:function(p){return trainingPathway(p)}
+      };
+    `;
+    d.body.appendChild(bridge);
+  }
+  const bridge=w.__BOOST_M5_BRIDGE__;
   const ev=evidence(s);
   const style=d.createElement('style');
   style.id='boostLiveM5Style';
@@ -130,7 +151,7 @@ function patchPlanner(){
       const roi=d.createElement('div');roi.id='boostROIGuardrail';roi.className='boostROINote';outlook.appendChild(roi);
       function updateROI(){
         try{
-          const cw=parseFloat(d.getElementById('currentWage')?.value||0),tw=Number(w.selectedOccupation?.hourly||0);
+          const selected=bridge?.selected?.(),cw=parseFloat(d.getElementById('currentWage')?.value||0),tw=Number(selected?.hourly||0);
           if(!cw||!tw){roi.textContent='BOOST will compare the target wage reference with your current/recent wage when both are available.';return}
           const ratio=tw/cw,pct=(ratio-1)*100;
           roi.innerHTML='<b>BOOST training-investment benchmark:</b> '+(ratio>=1.15?'At or above':'Below')+' 115% of current/recent wage. Target labor-market reference: <b>$'+tw.toFixed(2)+'/hr</b> vs. current/recent <b>$'+cw.toFixed(2)+'/hr</b> ('+(pct>=0?'+':'')+pct.toFixed(1)+'%). <span style="color:#607788">This is a coaching signal, not an automatic funding decision.</span>';
@@ -146,14 +167,15 @@ function patchPlanner(){
       actions.appendChild(save);
       save.addEventListener('click',function(){
         try{
-          const p=w.selectedPlanProgram?.();
+          const p=bridge?.plan?.();
           if(!p){alert('Choose a program for your Career Investment Plan first.');return}
           const acks=[...d.querySelectorAll('.finalAck')];
           if(acks.some(function(x){return !x.checked})){alert('Review and acknowledge the four decision statements before saving your Career Investment Results.');return}
           const gap=d.getElementById('boostGapStatement')?.value.trim()||ev.preparation;
-          const f=w.fundingFor(w.selectedOccupation,p);
+          const selected=bridge?.selected?.();
+          const f=bridge?.funding?.(selected,p);
           const cw=parseFloat(d.getElementById('currentWage')?.value||0)||0;
-          const target=Number(w.selectedOccupation?.hourly||0);
+          const target=Number(selected?.hourly||0);
           const payload={
             module:'module5',
             selectedSoc:ev.soc,
@@ -164,7 +186,7 @@ function patchPlanner(){
             provider:p.provider,
             programName:p.name,
             programId:p.id,
-            trainingPathway:w.trainingPathway(p),
+            trainingPathway:bridge?.pathway?.(p)||'',
             credentials:p.credentials||'',
             listedCost:p.cost||null,
             potentialCareerInvestment:f.eligible?f.potential:null,
@@ -173,7 +195,7 @@ function patchPlanner(){
             targetHourlyReference:target||null,
             roiRatio:cw>0&&target>0?target/cw:null,
             roiBenchmarkMet:cw>0&&target>0?(target/cw)>=1.15:null,
-            comparedProgramIds:[...w.compareIds],
+            comparedProgramIds:bridge?.compared?.()||[],
             evaluatedAt:new Date().toISOString(),
             completedAt:new Date().toISOString(),
             source:'live_etpl_training_research'
@@ -187,10 +209,20 @@ function patchPlanner(){
   }
 
   try{
-    const occ=(w.H3||[]).find(function(o){return String(o.soc||'')===String(ev.soc||'')})||(w.H3||[]).find(function(o){return String(o.title||'').toLowerCase()===String(ev.career||'').toLowerCase()});
-    if(occ&&typeof w.selectOccupation==='function'){w.selectOccupation(occ);setTimeout(function(){w.scrollTo(0,0)},80)}
-    else{notice.classList.add('show');notice.innerHTML='<b>BOOST carried forward your career direction, but it could not match that occupation to the training-research dataset automatically.</b> Use the occupation search in Module 5 or ask your Career Coach to verify the occupation.';d.querySelector('.searchWrap')?.style.setProperty('display','block','important')}
-  }catch(e){console.warn('Module 5 career carry-forward could not initialize',e)}
+    const occ=bridge?.findOccupation?.(ev.soc,ev.career);
+    if(occ&&bridge?.select){
+      notice.dataset.keep='';
+      notice.classList.remove('show');
+      bridge.select(occ);
+      d.querySelector('.searchWrap')?.style.setProperty('display','none','important');
+      setTimeout(function(){w.scrollTo(0,0)},120);
+    }else{
+      notice.classList.add('show');
+      notice.dataset.keep='1';
+      notice.innerHTML='<b>BOOST carried forward your career direction, but it could not match that occupation to the training-research dataset automatically.</b> Search for the occupation below or ask your Career Coach to verify the occupation.';
+      d.querySelector('.searchWrap')?.style.setProperty('display','block','important');
+    }
+  }catch(e){console.warn('Module 5 career carry-forward could not initialize',e);d.querySelector('.searchWrap')?.style.setProperty('display','block','important')}
 }
 
 function qiText(s,ev){
