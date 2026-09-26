@@ -1,1 +1,224 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BOOST Module 5 — Career Investment Conversation</title><style>html,body{height:100%;margin:0;background:#eef3f6;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}#app{width:100%;height:100%;border:0;display:block}.dock{position:fixed;z-index:20;left:16px;right:16px;bottom:14px;background:#102b46;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 10px 30px #0005;display:none;align-items:center;justify-content:space-between;gap:12px}.dock.show{display:flex}.dock small{color:#dceaf4}.actions{display:flex;gap:8px;flex-wrap:wrap}.dock button,.dock a{border:0;border-radius:10px;background:#f0bd4e;color:#30270e;font-weight:900;padding:11px 15px;cursor:pointer;text-decoration:none}.dock a.secondary{background:#eef4f7;color:#173f61}.notice{position:fixed;z-index:21;top:12px;left:50%;transform:translateX(-50%);max-width:820px;width:calc(100% - 32px);background:#fff8e8;border:1px solid #e6cf94;border-radius:12px;padding:10px 13px;box-shadow:0 8px 25px #0002;display:none}.notice.show{display:block}@media(max-width:760px){.dock{flex-direction:column;align-items:flex-start}}</style></head><body><div id="notice" class="notice"></div><iframe id="app" src="pathway-progression-test.html" title="BOOST Module 5 Career Investment Conversation"></iframe><div id="dock" class="dock"><div><b id="dockTitle">Coaching outlook saved</b><br><small id="dockText">Your evidence is ready for the next conversation.</small></div><div class="actions"><a id="planner" class="secondary" href="legacy-planner.html" style="display:none">Open Full Training Planner</a><button id="returnBtn" style="display:none">Mark Complete & Return to BOOST</button></div></div><script>const KEY='pinal_boost_career_exploration_v1';const qs=new URLSearchParams(location.search);const ret=qs.get('boost_return'),mod=qs.get('boost_module'),nonce=qs.get('boost_nonce');const iframe=document.getElementById('app'),dock=document.getElementById('dock'),planner=document.getElementById('planner'),returnBtn=document.getElementById('returnBtn'),notice=document.getElementById('notice');function state(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(_){return null}}function validReturn(){if(!ret||!mod||!nonce)return null;try{const u=new URL(ret,location.href);return u.origin===location.origin?u:null}catch(_){return null}}function refresh(){const s=state(),route=s?.module4?.route;if(!s?.module4){notice.classList.add('show');notice.innerHTML='<b>BOOST needs your Module 4 decision evidence before beginning the Career Investment Conversation.</b>';return}else notice.classList.remove('show');const evaluated=!!s?.module5?.evaluatedAt;const readyNonBuild=route&&route!=='BUILD';if(evaluated||readyNonBuild){dock.classList.add('show');document.getElementById('dockTitle').textContent=route==='BUILD'?'Career investment outlook saved':'Next-step coaching direction saved';document.getElementById('dockText').textContent='Your career coach can review the evidence with you and determine next steps.';planner.style.display=route==='BUILD'?'inline-block':'none';returnBtn.style.display=validReturn()?'inline-block':'none'}else{dock.classList.remove('show')}}setInterval(refresh,700);window.addEventListener('storage',refresh);returnBtn.onclick=()=>{const u=validReturn();if(!u)return;u.searchParams.set('boost_complete',mod);u.searchParams.set('boost_nonce',nonce);location.href=u.toString()};function scrubText(s){return s.replace(/BOOST\s*•\s*Module 5 Prototype/gi,'BOOST • Module 5').replace(/TEST ONLY\s*[—-]\s*live Module 5 is unchanged\.?/gi,'').replace(/Progression Test/gi,'Career Investment Conversation')}function scrubFrame(){let d;try{d=iframe.contentDocument}catch(_){return}if(!d)return;d.querySelectorAll('.test').forEach(el=>el.remove());const w=d.createTreeWalker(d.body||d,NodeFilter.SHOW_TEXT);const nodes=[];while(w.nextNode())nodes.push(w.currentNode);nodes.forEach(n=>{const v=scrubText(n.nodeValue||'');if(v!==n.nodeValue)n.nodeValue=v});if(d.title&&/test|prototype/i.test(d.title))d.title='BOOST Module 5 — Career Investment Conversation'}iframe.addEventListener('load',()=>{scrubFrame();try{const d=iframe.contentDocument;const obs=new MutationObserver(()=>scrubFrame());obs.observe(d.body,{childList:true,subtree:true,characterData:true})}catch(_){}});refresh();</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BOOST Module 5 — Career Investment Explorer</title>
+<style>
+html,body{height:100%;margin:0;background:#eef3f6;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+#app{width:100%;height:100%;border:0;display:block}
+.dock{position:fixed;z-index:30;left:16px;right:16px;bottom:14px;background:#102b46;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 10px 30px #0005;display:none;align-items:center;justify-content:space-between;gap:12px}
+.dock.show{display:flex}.dock small{color:#dceaf4}.actions{display:flex;gap:8px;flex-wrap:wrap}
+.dock button{border:0;border-radius:10px;background:#f0bd4e;color:#30270e;font-weight:900;padding:11px 15px;cursor:pointer}
+.notice{position:fixed;z-index:31;top:12px;left:50%;transform:translateX(-50%);max-width:820px;width:calc(100% - 32px);background:#fff8e8;border:1px solid #e6cf94;border-radius:12px;padding:10px 13px;box-shadow:0 8px 25px #0002;display:none}
+.notice.show{display:block}
+@media(max-width:760px){.dock{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div id="notice" class="notice"></div>
+<iframe id="app" src="legacy-planner.html?v=20260926-liveflow1" title="BOOST Module 5 Career Investment Explorer"></iframe>
+<div id="dock" class="dock">
+  <div><b id="dockTitle">Career investment plan saved</b><br><small id="dockText">Your training research and investment evidence are ready to carry forward.</small></div>
+  <div class="actions"><button id="returnBtn" style="display:none">Save Results & Return to BOOST</button></div>
+</div>
+<script>
+const KEY='pinal_boost_career_exploration_v1';
+const JOURNEY='pinal_boost_journey_v1';
+const qs=new URLSearchParams(location.search);
+const ret=qs.get('boost_return'),mod=qs.get('boost_module'),nonce=qs.get('boost_nonce');
+const iframe=document.getElementById('app'),dock=document.getElementById('dock'),returnBtn=document.getElementById('returnBtn'),notice=document.getElementById('notice');
+
+function read(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch(_){return null}}
+function state(){return read(KEY)}
+function validReturn(){if(!ret||!mod||!nonce)return null;try{const u=new URL(ret,location.href);return u.origin===location.origin?u:null}catch(_){return null}}
+
+function currentWage(s){
+  const m2=s?.module2||{};
+  const j=read(JOURNEY)||{};
+  const jm2=j?.modules?.module2||{};
+  const values=[
+    m2.currentHourlyWage,m2.wageBaseline?.hourly,
+    jm2.currentHourlyWage,jm2.wageBaseline?.hourly,
+    j?.participant?.currentHourlyWage
+  ];
+  for(const v of values){const n=Number(v);if(Number.isFinite(n)&&n>0)return n}
+  return 0;
+}
+
+function evidence(s){
+  const m4=s?.module4||{},m2=s?.module2||{},soc=m4.selectedSoc||m4.career?.soc||m4.careerTarget?.soc||'';
+  const row=m2.validationBySoc?.[soc]||{};
+  const qi=m4.preparationIntel||row.preparationIntel||{};
+  return{
+    career:m4.careerTitle||m4.career?.title||m4.careerTarget?.title||'',
+    soc,
+    route:m4.route||'',
+    preparation:m4.preparationReadiness||row.prep||qi.label||'Preparation gap identified',
+    education:qi.baseline?.education||m4.typicalEducation||'Varies by occupation/employer',
+    employerSupport:m4.employerSupportedRoute||m4.employerSupport||row.employerSupport||'No employer-supported route verified',
+    regional:row.jobs||m4.regionalOpportunity||'Regional evidence carried forward',
+    wage:currentWage(s)
+  }
+}
+
+function patchPlanner(){
+  const d=iframe.contentDocument,w=iframe.contentWindow,s=state();
+  if(!d||!w||!s?.module4)return;
+  const ev=evidence(s);
+  const style=d.createElement('style');
+  style.id='boostLiveM5Style';
+  style.textContent='.boostCarry{margin:14px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.boostCarryCard{padding:12px;border:1px solid #d6e0e6;border-radius:12px;background:#f7fafc}.boostCarryCard small{display:block;color:#607788;font-weight:800;margin-bottom:4px}.boostGapBox{margin-top:14px;padding:14px;border:1px solid #c9dce5;border-left:5px solid #008f8c;border-radius:12px;background:#f7fbfc}.boostGapBox label{display:block;font-weight:850;margin:10px 0 5px}.boostGapBox select,.boostGapBox textarea{width:100%;border:1px solid #bdccd5;border-radius:10px;padding:10px;font:inherit;background:#fff}.boostGapBox textarea{min-height:78px;resize:vertical}.boostLiveSave{background:#173f61!important;color:#fff!important}.boostROINote{margin-top:12px;padding:12px;border-radius:12px;background:#eef7f6;border:1px solid #b9dedb}.searchWrap{display:none!important}';
+  d.head.appendChild(style);
+
+  const steps=d.querySelectorAll('.stepbar .step');
+  if(steps[0])steps[0].textContent='1. Evidence Carried Forward';
+  if(steps[1])steps[1].textContent='2. Define the Gap';
+  if(steps[2])steps[2].textContent='3. Research Training';
+  if(steps[3])steps[3].textContent='4. Compare & Evaluate';
+
+  const panels=[...d.querySelectorAll('main .panel, .shell > .panel')];
+  const goalPanel=d.querySelector('.searchWrap')?.closest('.panel');
+  if(goalPanel){
+    const eye=goalPanel.querySelector('.eyebrow'),h=goalPanel.querySelector('h2'),help=goalPanel.querySelector('.help');
+    if(eye)eye.textContent='Step 1 • What BOOST already knows';
+    if(h)h.textContent='Your career direction and evidence carried forward';
+    if(help)help.textContent='You already did this work. Module 5 starts with the career, wage, preparation, and regional evidence you built in Modules 2–4.';
+    const carry=d.createElement('div');carry.className='boostCarry';
+    const items=[
+      ['Career',ev.career||ev.soc],
+      ['Current / recent wage',ev.wage?'$'+ev.wage.toFixed(2)+'/hr':'Not available'],
+      ['Preparation evidence',ev.preparation],
+      ['Typical entry education',ev.education],
+      ['Employer-supported route',ev.employerSupport],
+      ['Regional evidence',ev.regional]
+    ];
+    carry.innerHTML=items.map(function(x){return '<div class="boostCarryCard"><small>'+escapeHtml(x[0])+'</small><b>'+escapeHtml(String(x[1]||'Carried forward'))+'</b></div>'}).join('');
+    const occ=d.getElementById('occCard');if(occ)goalPanel.insertBefore(carry,occ);
+  }
+
+  const emp=d.getElementById('employerPanel');
+  if(emp){
+    const eye=emp.querySelector('.eyebrow'),h=emp.querySelector('h2'),help=emp.querySelector('.help');
+    if(eye)eye.textContent='Step 2 • Define the specific gap';
+    if(h)h.textContent='What preparation gap are you actually trying to close?';
+    if(help)help.textContent='BOOST has already identified that preparation deserves a closer look. Before researching programs, define the gap you want the training research to solve.';
+    const rg=emp.querySelector('.realityGrid'),status=d.getElementById('employerStatus');if(rg)rg.style.display='none';if(status)status.style.display='none';
+    const box=d.createElement('div');box.className='boostGapBox';
+    box.innerHTML='<b>Carried-forward preparation evidence</b><div style="margin-top:4px">'+escapeHtml(ev.preparation)+'</div><div style="margin-top:6px;color:#607788">Typical entry education: <b>'+escapeHtml(ev.education)+'</b></div><label for="boostGapMode">How should BOOST treat the gap for training research?</label><select id="boostGapMode"><option value="carry">Use the carried-forward preparation evidence</option><option value="verify">I still need to verify the exact employer requirement</option><option value="specific">I identified a more specific credential, license, skill, or preparation step</option></select><label for="boostGapStatement">Specific gap to research</label><textarea id="boostGapStatement" placeholder="Example: Bachelor\'s degree, state license, AWS welding credential, CDL Class A, CNC programming skill..."></textarea>';
+    const btn=d.getElementById('continueToTraining');if(btn){emp.insertBefore(box,btn.closest('.planActions')||btn);btn.textContent='Research Approved Training Options →'}
+    const gapText=qiText(s,ev);d.getElementById('boostGapStatement').value=gapText;
+    d.getElementById('boostGapMode').addEventListener('change',function(){if(this.value==='carry'&&!d.getElementById('boostGapStatement').value.trim())d.getElementById('boostGapStatement').value=gapText});
+  }
+
+  const train=d.getElementById('trainingPanel');
+  if(train){
+    const eye=train.querySelector('.eyebrow'),help=train.querySelector('.resultsHeader .help');
+    if(eye)eye.textContent='Step 3 • Research approved training options';
+    if(help)help.textContent='Review ETPL-listed and approved training options aligned to your target occupation. Compare pathway, credential, time, listed cost, and potential Pinal career investment before choosing a program.';
+  }
+
+  const compare=d.getElementById('comparePanel');
+  if(compare){
+    const eye=compare.querySelector('.eyebrow'),h=compare.querySelector('h2');
+    if(eye)eye.textContent='Step 4 • Compare, evaluate, and plan';
+    if(h)h.textContent='Compare programs and evaluate the investment';
+    const wage=d.getElementById('currentWage');if(wage&&ev.wage){wage.value=String(ev.wage);wage.dispatchEvent(new Event('input',{bubbles:true}))}
+    const wageLabel=d.querySelector('label[for="currentWage"]');if(wageLabel)wageLabel.textContent='Current or recent hourly wage (carried forward when available)';
+    const outlook=d.getElementById('outlook');
+    if(outlook){
+      const roi=d.createElement('div');roi.id='boostROIGuardrail';roi.className='boostROINote';outlook.appendChild(roi);
+      function updateROI(){
+        try{
+          const cw=parseFloat(d.getElementById('currentWage')?.value||0),tw=Number(w.selectedOccupation?.hourly||0);
+          if(!cw||!tw){roi.textContent='BOOST will compare the target wage reference with your current/recent wage when both are available.';return}
+          const ratio=tw/cw,pct=(ratio-1)*100;
+          roi.innerHTML='<b>BOOST training-investment benchmark:</b> '+(ratio>=1.15?'At or above':'Below')+' 115% of current/recent wage. Target labor-market reference: <b>$'+tw.toFixed(2)+'/hr</b> vs. current/recent <b>$'+cw.toFixed(2)+'/hr</b> ('+(pct>=0?'+':'')+pct.toFixed(1)+'%). <span style="color:#607788">This is a coaching signal, not an automatic funding decision.</span>';
+        }catch(_){}
+      }
+      d.getElementById('currentWage')?.addEventListener('input',updateROI);
+      d.getElementById('selectedProgram')?.addEventListener('change',updateROI);
+      updateROI();
+    }
+    const actions=compare.querySelector('.planActions');
+    if(actions&&!d.getElementById('boostSaveInvestment')){
+      const save=d.createElement('button');save.id='boostSaveInvestment';save.className='teal boostLiveSave';save.textContent='Save Career Investment Results';
+      actions.appendChild(save);
+      save.addEventListener('click',function(){
+        try{
+          const p=w.selectedPlanProgram?.();
+          if(!p){alert('Choose a program for your Career Investment Plan first.');return}
+          const acks=[...d.querySelectorAll('.finalAck')];
+          if(acks.some(function(x){return !x.checked})){alert('Review and acknowledge the four decision statements before saving your Career Investment Results.');return}
+          const gap=d.getElementById('boostGapStatement')?.value.trim()||ev.preparation;
+          const f=w.fundingFor(w.selectedOccupation,p);
+          const cw=parseFloat(d.getElementById('currentWage')?.value||0)||0;
+          const target=Number(w.selectedOccupation?.hourly||0);
+          const payload={
+            module:'module5',
+            selectedSoc:ev.soc,
+            careerTitle:ev.career,
+            route:ev.route,
+            gapMode:d.getElementById('boostGapMode')?.value||'carry',
+            specificGap:gap,
+            provider:p.provider,
+            programName:p.name,
+            programId:p.id,
+            trainingPathway:w.trainingPathway(p),
+            credentials:p.credentials||'',
+            listedCost:p.cost||null,
+            potentialCareerInvestment:f.eligible?f.potential:null,
+            potentialRemainingCost:f.eligible?f.gap:null,
+            currentHourlyWage:cw||null,
+            targetHourlyReference:target||null,
+            roiRatio:cw>0&&target>0?target/cw:null,
+            roiBenchmarkMet:cw>0&&target>0?(target/cw)>=1.15:null,
+            comparedProgramIds:[...w.compareIds],
+            evaluatedAt:new Date().toISOString(),
+            completedAt:new Date().toISOString(),
+            source:'live_etpl_training_research'
+          };
+          const shared=state()||{};shared.module5=payload;shared.updatedAt=new Date().toISOString();localStorage.setItem(KEY,JSON.stringify(shared));
+          const j=read(JOURNEY)||{};j.modules=j.modules||{};j.progress=j.progress||{};j.modules.module5=payload;j.progress.module5='complete';j.updated_at=new Date().toISOString();localStorage.setItem(JOURNEY,JSON.stringify(j));
+          parent.postMessage({type:'boost-module5-saved'},location.origin);
+        }catch(e){console.error(e);alert('BOOST could not save the Career Investment Results. Please try again.')}
+      });
+    }
+  }
+
+  try{
+    const occ=(w.H3||[]).find(function(o){return String(o.soc||'')===String(ev.soc||'')})||(w.H3||[]).find(function(o){return String(o.title||'').toLowerCase()===String(ev.career||'').toLowerCase()});
+    if(occ&&typeof w.selectOccupation==='function'){w.selectOccupation(occ);setTimeout(function(){w.scrollTo(0,0)},80)}
+    else{notice.classList.add('show');notice.innerHTML='<b>BOOST carried forward your career direction, but it could not match that occupation to the training-research dataset automatically.</b> Use the occupation search in Module 5 or ask your Career Coach to verify the occupation.';d.querySelector('.searchWrap')?.style.setProperty('display','block','important')}
+  }catch(e){console.warn('Module 5 career carry-forward could not initialize',e)}
+}
+
+function qiText(s,ev){
+  const m4=s?.module4||{},m2=s?.module2||{},row=m2.validationBySoc?.[ev.soc]||{},qi=m4.preparationIntel||row.preparationIntel||{};
+  if(qi?.baseline?.education)return qi.baseline.education;
+  if(qi?.label)return qi.label;
+  if(ev.preparation)return ev.preparation;
+  return '';
+}
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
+
+function refresh(){
+  const s=state(),route=s?.module4?.route;
+  if(!s?.module4){notice.classList.add('show');notice.innerHTML='<b>BOOST needs your Module 4 decision evidence before beginning Career Investment Explorer.</b>';return}
+  if(route&&route!=='BUILD'){
+    notice.classList.add('show');notice.innerHTML='<b>Your Module 4 direction is '+escapeHtml(route)+'.</b> Training research is not required unless you and your Career Coach decide that a preparation investment needs to be explored.';
+  }else if(!notice.dataset.keep){notice.classList.remove('show')}
+  const saved=!!s?.module5?.evaluatedAt;
+  dock.classList.toggle('show',saved);
+  returnBtn.style.display=saved&&validReturn()?'inline-block':'none';
+}
+
+window.addEventListener('message',function(e){if(e.origin!==location.origin||e.data?.type!=='boost-module5-saved')return;refresh();dock.classList.add('show')});
+iframe.addEventListener('load',function(){setTimeout(patchPlanner,60)});
+setInterval(refresh,900);
+window.addEventListener('storage',refresh);
+returnBtn.onclick=function(){const u=validReturn();if(!u)return;u.searchParams.set('boost_complete',mod);u.searchParams.set('boost_nonce',nonce);location.href=u.toString()};
+refresh();
+</script>
+</body>
+</html>
