@@ -245,7 +245,7 @@ function refresh(){
   returnBtn.style.display=saved&&validReturn()?'inline-block':'none';
 }
 
-window.addEventListener('message',function(e){if(e.origin!==location.origin||e.data?.type!=='boost-module5-saved')return;refresh();dock.classList.add('show')});
+window.addEventListener('message',function(e){if(e.origin!==location.origin||e.data?.type!=='boost-module5-saved')return;refresh();dock.classList.add('show');try{if(parent&&parent!==window)parent.postMessage({type:'boost-module5-saved'},location.origin)}catch(_){}});
 iframe.addEventListener('load',function(){
   try{
     const d=iframe.contentDocument;
