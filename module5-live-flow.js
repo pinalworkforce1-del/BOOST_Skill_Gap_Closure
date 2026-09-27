@@ -27,7 +27,44 @@ function style(){
  .boostGapBox textarea{min-height:78px;resize:vertical}
  .boostLiveSave{background:#173f61!important;color:#fff!important}
  .boostROINote{margin-top:12px;padding:12px;border-radius:12px;background:#eef7f6;border:1px solid #b9dedb}
+ .boostM5ResetRow{display:flex;justify-content:flex-end;margin:10px 0 2px}
+ .boostM5Reset{border:1px solid #b9c8d1;border-radius:999px;background:#fff;color:#17324d;padding:9px 13px;font:850 13px/1 system-ui;cursor:pointer}
+ .boostM5Reset:hover{background:#f4f8fa}
+ .boostM5ResetNote{margin-top:8px;color:#667c89;font-size:12px;line-height:1.4}
  `;document.head.appendChild(st);
+}
+function sameCareer(saved,ev){
+ const a=String(saved?.selectedSoc||'').replace(/[^0-9-]/g,''),b=String(ev?.soc||'').replace(/[^0-9-]/g,'');
+ if(a&&b)return a===b;
+ const at=String(saved?.careerTitle||'').trim().toLowerCase(),bt=String(ev?.career||'').trim().toLowerCase();
+ return !!at&&!!bt&&at===bt;
+}
+function archiveActiveModule5(reason,ev){
+ const s=read(KEY)||{},j=read(JOURNEY)||{},active=s.module5||j?.modules?.module5||null;
+ if(active&&Object.keys(active).length){
+   const entry=Object.assign({},active,{archivedAt:new Date().toISOString(),archiveReason:reason||'reset',replacedBySoc:ev?.soc||'',replacedByCareer:ev?.career||''});
+   s.module5History=Array.isArray(s.module5History)?s.module5History:[];
+   s.module5History.push(entry);
+   if(s.module5History.length>8)s.module5History=s.module5History.slice(-8);
+   j.module5History=Array.isArray(j.module5History)?j.module5History:[];
+   j.module5History.push(entry);
+   if(j.module5History.length>8)j.module5History=j.module5History.slice(-8);
+ }
+ delete s.module5;s.updatedAt=new Date().toISOString();localStorage.setItem(KEY,JSON.stringify(s));
+ j.modules=j.modules||{};delete j.modules.module5;
+ j.progress=j.progress||{};j.progress.module5='stale';
+ j.staleModules=j.staleModules||{};j.staleModules.module5={reason:reason==='career_changed'?'Career direction changed. Rebuild Career Investment for the current occupation.':'Career Investment was cleared and must be rebuilt.',markedAt:new Date().toISOString()};
+ j.portal=j.portal||{};if(Array.isArray(j.portal.completed))j.portal.completed=j.portal.completed.filter(id=>id!=='module5');
+ if(j.portal.mapState?.complete)delete j.portal.mapState.complete['m:module5'];
+ j.updated_at=new Date().toISOString();localStorage.setItem(JOURNEY,JSON.stringify(j));
+ try{const done=new Set(JSON.parse(localStorage.getItem('boostPortalCompleted_v2')||'[]'));done.delete('module5');localStorage.setItem('boostPortalCompleted_v2',JSON.stringify([...done]))}catch(_){}
+ try{const ms=JSON.parse(localStorage.getItem('boostPathwaysV29')||'{}');ms.complete=ms.complete||{};delete ms.complete['m:module5'];localStorage.setItem('boostPathwaysV29',JSON.stringify(ms))}catch(_){}
+ try{if(typeof compareIds!=='undefined')compareIds.clear()}catch(_){}
+}
+function resetIfCareerChanged(ev){
+ const saved=ev?.s?.module5||read(JOURNEY)?.modules?.module5||null;
+ if(saved?.evaluatedAt&&!sameCareer(saved,ev)){archiveActiveModule5('career_changed',ev);ev.s=read(KEY)||{};return true}
+ return false;
 }
 function gapText(ev){return ev.qi?.baseline?.education||ev.qi?.label||ev.preparation||''}
 function findOccupation(ev){
@@ -51,7 +88,7 @@ function saveResults(ev){
 }
 function restoreSaved(ev){
  const saved=ev.s?.module5||read(JOURNEY)?.modules?.module5||null;
- if(!saved?.evaluatedAt)return;
+ if(!saved?.evaluatedAt||!sameCareer(saved,ev))return;
  try{
   if($('boostGapMode')&&saved.gapMode)$('boostGapMode').value=saved.gapMode;
   if($('boostGapStatement')&&saved.specificGap)$('boostGapStatement').value=saved.specificGap;
@@ -75,6 +112,7 @@ function restoreSaved(ev){
 function init(){
  style();
  const ev=evidence();if(!ev.s?.module4)return;
+ const careerWasReset=resetIfCareerChanged(ev);
  const steps=document.querySelectorAll('.stepbar .step');
  if(steps[0])steps[0].textContent='1. Evidence Carried Forward';
  if(steps[1])steps[1].textContent='2. Define the Gap';
@@ -90,6 +128,15 @@ function init(){
   const items=[['Career',ev.career||ev.soc],['Current / recent wage',ev.wage?'$'+ev.wage.toFixed(2)+'/hr':'Not available'],['Preparation evidence',ev.preparation],['Typical entry education',ev.education],['Employer-supported route',ev.employerSupport],['Regional evidence',ev.regional]];
   carry.innerHTML=items.map(x=>'<div class="boostCarryCard"><small>'+esc(x[0])+'</small><b>'+esc(String(x[1]||'Carried forward'))+'</b></div>').join('');
   const occ=$('occCard');goal.insertBefore(carry,occ||null);
+  const resetRow=document.createElement('div');resetRow.className='boostM5ResetRow';resetRow.innerHTML='<div><button type="button" id="boostM5Reset" class="boostM5Reset">↻ Clear Module 5 / Start Fresh</button><div class="boostM5ResetNote">Clears only Career Investment Explorer. Your Modules 1–4 evidence stays intact.</div></div>';goal.insertBefore(resetRow,occ||null);
+  $('boostM5Reset')?.addEventListener('click',()=>{
+    if(!confirm('Clear the current Career Investment Explorer work and start fresh for '+(ev.career||'this career')+'? Modules 1–4 will not be changed.'))return;
+    archiveActiveModule5('manual_reset',ev);
+    location.reload();
+  });
+  if(careerWasReset){
+    const note=document.createElement('div');note.style.cssText='margin:12px 0;padding:12px 14px;border-radius:11px;background:#fff7dc;border-left:5px solid #d69a18;color:#4d3c13;font-weight:750;line-height:1.45';note.innerHTML='<b>Your career direction changed.</b><br>BOOST cleared the previous Career Investment comparison so the training research below is tied only to <b>'+esc(ev.career||'your current occupation')+'</b>. Your earlier result was archived for history.';goal.insertBefore(note,occ||null);
+  }
  }
  const occ=findOccupation(ev);
  if(occ&&typeof selectOccupation==='function'){
