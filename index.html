@@ -17,7 +17,7 @@ html,body{height:100%;margin:0;background:#eef3f6;font-family:system-ui,-apple-s
 </head>
 <body>
 <div id="notice" class="notice"></div>
-<iframe id="app" src="legacy-planner.html?v=20260926-liveflow2" title="BOOST Module 5 Career Investment Explorer"></iframe>
+<iframe id="app" src="legacy-planner.html?v=20260926-liveflow3" title="BOOST Module 5 Career Investment Explorer"></iframe>
 <div id="dock" class="dock">
   <div><b id="dockTitle">Career investment plan saved</b><br><small id="dockText">Your training research and investment evidence are ready to carry forward.</small></div>
   <div class="actions"><button id="returnBtn" style="display:none">Save Results & Return to BOOST</button></div>
@@ -246,7 +246,17 @@ function refresh(){
 }
 
 window.addEventListener('message',function(e){if(e.origin!==location.origin||e.data?.type!=='boost-module5-saved')return;refresh();dock.classList.add('show')});
-iframe.addEventListener('load',function(){setTimeout(patchPlanner,60)});
+iframe.addEventListener('load',function(){
+  try{
+    const d=iframe.contentDocument;
+    if(!d)return;
+    if(!d.querySelector('script[src*="module5-live-flow.js"]')){
+      const s=d.createElement('script');
+      s.src='module5-live-flow.js?v=20260926-liveflow3';
+      d.body.appendChild(s);
+    }
+  }catch(e){console.warn('Module 5 live flow could not load inside planner',e)}
+});
 setInterval(refresh,900);
 window.addEventListener('storage',refresh);
 returnBtn.onclick=function(){const u=validReturn();if(!u)return;u.searchParams.set('boost_complete',mod);u.searchParams.set('boost_nonce',nonce);location.href=u.toString()};
