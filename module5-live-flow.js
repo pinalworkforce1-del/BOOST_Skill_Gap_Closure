@@ -44,8 +44,33 @@ function saveResults(ev){
  const f=fundingFor(selectedOccupation,p),cw=parseFloat($('currentWage')?.value||0)||0,target=Number(selectedOccupation?.hourly||0);
  const payload={module:'module5',selectedSoc:ev.soc,careerTitle:ev.career,route:ev.route,gapMode:$('boostGapMode')?.value||'carry',specificGap:$('boostGapStatement')?.value.trim()||ev.preparation,provider:p.provider,programName:p.name,programId:p.id,trainingPathway:trainingPathway(p),credentials:p.credentials||'',listedCost:p.cost||null,potentialCareerInvestment:f.eligible?f.potential:null,potentialRemainingCost:f.eligible?f.gap:null,currentHourlyWage:cw||null,targetHourlyReference:target||null,roiRatio:cw>0&&target>0?target/cw:null,roiBenchmarkMet:cw>0&&target>0?(target/cw)>=1.15:null,comparedProgramIds:Array.from(compareIds||[]),evaluatedAt:new Date().toISOString(),completedAt:new Date().toISOString(),source:'live_etpl_training_research'};
  const s=read(KEY)||{};s.module5=payload;s.updatedAt=new Date().toISOString();localStorage.setItem(KEY,JSON.stringify(s));
- const j=read(JOURNEY)||{};j.modules=j.modules||{};j.progress=j.progress||{};j.modules.module5=payload;j.progress.module5='complete';j.updated_at=new Date().toISOString();localStorage.setItem(JOURNEY,JSON.stringify(j));
+ const j=read(JOURNEY)||{};j.modules=j.modules||{};j.progress=j.progress||{};j.modules.module5=Object.assign({},j.modules.module5||{},payload,{completedAt:new Date().toISOString()});j.progress.module5='complete';if(j.staleModules)delete j.staleModules.module5;j.portal=j.portal||{};j.portal.completed=Array.from(new Set([...(j.portal.completed||[]),'module5']));j.updated_at=new Date().toISOString();localStorage.setItem(JOURNEY,JSON.stringify(j));
+ try{const done=new Set(JSON.parse(localStorage.getItem('boostPortalCompleted_v2')||'[]'));done.add('module5');localStorage.setItem('boostPortalCompleted_v2',JSON.stringify([...done]))}catch(_){}
+ try{const ms=JSON.parse(localStorage.getItem('boostPathwaysV29')||'{}');ms.complete=ms.complete||{};ms.complete['m:module5']=true;localStorage.setItem('boostPathwaysV29',JSON.stringify(ms))}catch(_){}
  parent.postMessage({type:'boost-module5-saved'},location.origin);
+}
+function restoreSaved(ev){
+ const saved=ev.s?.module5||read(JOURNEY)?.modules?.module5||null;
+ if(!saved?.evaluatedAt)return;
+ try{
+  if($('boostGapMode')&&saved.gapMode)$('boostGapMode').value=saved.gapMode;
+  if($('boostGapStatement')&&saved.specificGap)$('boostGapStatement').value=saved.specificGap;
+  if($('currentWage')&&saved.currentHourlyWage!=null){$('currentWage').value=String(saved.currentHourlyWage);$('currentWage').dispatchEvent(new Event('input',{bubbles:true}))}
+  const ids=Array.isArray(saved.comparedProgramIds)&&saved.comparedProgramIds.length?saved.comparedProgramIds:(saved.programId?[String(saved.programId)]:[]);
+  compareIds.clear();ids.forEach(id=>compareIds.add(String(id)));
+  if(typeof renderPrograms==='function')renderPrograms();
+  if(typeof updateCompareBar==='function')updateCompareBar();
+  if(ids.length&&$('openCompare')){
+    if(typeof renderCompare==='function')renderCompare();
+    $('comparePanel')?.classList.remove('hidden');
+    $('s4')?.classList.add('active');
+  }
+  if(saved.programId&&$('selectedProgram')){
+    const opt=[...$('selectedProgram').options].find(o=>String(o.value)===String(saved.programId));
+    if(opt){$('selectedProgram').value=String(saved.programId);if(typeof updateInvestmentPlan==='function')updateInvestmentPlan()}
+  }
+  document.querySelectorAll('.finalAck').forEach(x=>x.checked=true);
+ }catch(e){console.warn('BOOST Module 5 saved results could not be restored',e)}
 }
 function init(){
  style();
@@ -93,6 +118,7 @@ function init(){
   const outlook=$('outlook');if(outlook&&!$('boostROIGuardrail')){const roi=document.createElement('div');roi.id='boostROIGuardrail';roi.className='boostROINote';outlook.appendChild(roi);const update=()=>{const cw=parseFloat($('currentWage')?.value||0),tw=Number(selectedOccupation?.hourly||0);if(!cw||!tw){roi.textContent='BOOST will compare the target wage reference with your current/recent wage when both are available.';return}const ratio=tw/cw,pct=(ratio-1)*100;roi.innerHTML='<b>BOOST training-investment benchmark:</b> '+(ratio>=1.15?'At or above':'Below')+' 115% of current/recent wage. Target labor-market reference: <b>$'+tw.toFixed(2)+'/hr</b> vs. current/recent <b>$'+cw.toFixed(2)+'/hr</b> ('+(pct>=0?'+':'')+pct.toFixed(1)+'%). <span style="color:#607788">This is a coaching signal, not an automatic funding decision.</span>'};wage?.addEventListener('input',update);$('selectedProgram')?.addEventListener('change',update);update()}
   const actions=compare.querySelector('.planActions');if(actions&&!$('boostSaveInvestment')){const b=document.createElement('button');b.id='boostSaveInvestment';b.className='teal boostLiveSave';b.textContent='Save Career Investment Results';b.addEventListener('click',()=>saveResults(ev));actions.appendChild(b)}
  }
+ restoreSaved(ev);
  window.__BOOST_M5_READY__={career:ev.career,soc:ev.soc,occupationMatched:!!occ};
  setTimeout(()=>window.scrollTo(0,0),100);
 }
