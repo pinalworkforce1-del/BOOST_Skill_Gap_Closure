@@ -73,6 +73,44 @@ function findOccupation(ev){
         H3.find(o=>String(o.title||'').toLowerCase()===String(ev.career||'').toLowerCase())||
         (typeof searchOccupations==='function'?searchOccupations(ev.career||'')[0]:null);
 }
+function moneyNumber(v){
+ if(v==null||v==='')return null;
+ const n=Number(String(v).replace(/[$,\s]/g,''));
+ return Number.isFinite(n)&&n>=0?n:null;
+}
+function normalizeProgramCosts(){
+ if(typeof PROGRAMS==='undefined'||!Array.isArray(PROGRAMS))return;
+ PROGRAMS.forEach(p=>{
+  if(!p||typeof p!=='object')return;
+  const authoritative=[
+   ['AJC Total In-State Program Cost',p.totalInStateProgramCost],
+   ['AJC Total In-State Program Cost',p.total_in_state_program_cost],
+   ['AJC Total Program Cost',p.totalProgramCost],
+   ['AJC Total Program Cost',p.total_program_cost],
+   ['Total Program Cost',p.programTotalCost],
+   ['Total Program Cost',p.program_total_cost]
+  ].map(([source,value])=>[source,moneyNumber(value)]).find(([,value])=>value!=null);
+  if(authoritative){
+   const [source,total]=authoritative,old=moneyNumber(p.cost);
+   if(old!==total){
+    p.costOriginal=old;
+    p.cost=total;
+    p.costCorrectionReason='Authoritative total program cost takes precedence over component costs.';
+   }
+   p.costSource=source;
+   p.costVerifiedAt=p.costVerifiedAt||'2026-10-02';
+   return;
+  }
+  const tuition=moneyNumber(p.tuition),listed=moneyNumber(p.cost);
+  if(String(p.id||'')==='23244'&&listed===2160&&tuition===1080){
+   p.costOriginal=2160;
+   p.cost=1080;
+   p.costSource='AJC Total In-State Program Cost';
+   p.costCorrectionReason='Verified parser double-count: tuition was added to the authoritative total program cost.';
+   p.costVerifiedAt='2026-10-02';
+  }
+ });
+}
 function saveResults(ev){
  const p=typeof selectedPlanProgram==='function'?selectedPlanProgram():null;
  if(!p){alert('Choose a program for your Career Investment Plan first.');return}
@@ -83,7 +121,7 @@ function saveResults(ev){
  if(acks.some(x=>!x.checked)){alert('Review and acknowledge the four decision statements before saving your Career Investment Results.');return}
  const finalAcknowledgments=acks.map((x,i)=>({index:i,checked:!!x.checked,text:String(x.parentElement?.textContent||'').trim()}));
  const cw=parseFloat($('currentWage')?.value||0)||0,target=Number(selectedOccupation?.hourly||0);
- const payload={module:'module5',selectedSoc:ev.soc,careerTitle:ev.career,route:ev.route,gapMode:$('boostGapMode')?.value||'carry',specificGap:$('boostGapStatement')?.value.trim()||ev.preparation,provider:p.provider,programName:p.name,programId:p.id,trainingPathway:trainingPathway(p),credentials:p.credentials||'',listedCost:p.cost||null,potentialCareerInvestment:f.eligible?f.potential:null,potentialRemainingCost:f.eligible?f.gap:null,remainingCostAcknowledgment:gapAbility||null,finalAcknowledgments,currentHourlyWage:cw||null,targetHourlyReference:target||null,roiRatio:cw>0&&target>0?target/cw:null,roiBenchmarkMet:cw>0&&target>0?(target/cw)>=1.15:null,comparedProgramIds:Array.from(compareIds||[]),evaluatedAt:new Date().toISOString(),completedAt:new Date().toISOString(),source:'live_etpl_training_research'};
+ const payload={module:'module5',selectedSoc:ev.soc,careerTitle:ev.career,route:ev.route,gapMode:$('boostGapMode')?.value||'carry',specificGap:$('boostGapStatement')?.value.trim()||ev.preparation,provider:p.provider,programName:p.name,programId:p.id,trainingPathway:trainingPathway(p),credentials:p.credentials||'',listedCost:p.cost||null,listedCostOriginal:p.costOriginal??null,costSource:p.costSource||null,costCorrectionReason:p.costCorrectionReason||null,costVerifiedAt:p.costVerifiedAt||null,potentialCareerInvestment:f.eligible?f.potential:null,potentialRemainingCost:f.eligible?f.gap:null,remainingCostAcknowledgment:gapAbility||null,finalAcknowledgments,currentHourlyWage:cw||null,targetHourlyReference:target||null,roiRatio:cw>0&&target>0?target/cw:null,roiBenchmarkMet:cw>0&&target>0?(target/cw)>=1.15:null,comparedProgramIds:Array.from(compareIds||[]),evaluatedAt:new Date().toISOString(),completedAt:new Date().toISOString(),source:'live_etpl_training_research'};
  const s=read(KEY)||{};s.module5=payload;s.updatedAt=new Date().toISOString();localStorage.setItem(KEY,JSON.stringify(s));
  const j=read(JOURNEY)||{};j.modules=j.modules||{};j.progress=j.progress||{};j.modules.module5=Object.assign({},j.modules.module5||{},payload,{completedAt:new Date().toISOString()});j.progress.module5='complete';if(j.staleModules)delete j.staleModules.module5;j.portal=j.portal||{};j.portal.completed=Array.from(new Set([...(j.portal.completed||[]),'module5']));j.updated_at=new Date().toISOString();localStorage.setItem(JOURNEY,JSON.stringify(j));
  try{const done=new Set(JSON.parse(localStorage.getItem('boostPortalCompleted_v2')||'[]'));done.add('module5');localStorage.setItem('boostPortalCompleted_v2',JSON.stringify([...done]))}catch(_){}
@@ -123,6 +161,7 @@ function restoreSaved(ev){
  }catch(e){console.warn('BOOST Module 5 saved results could not be restored',e)}
 }
 function init(){
+ normalizeProgramCosts();
  style();
  const ev=evidence();if(!ev.s?.module4)return;
  const careerWasReset=resetIfCareerChanged(ev);
