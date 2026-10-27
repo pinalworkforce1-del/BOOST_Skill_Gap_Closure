@@ -261,5 +261,17 @@ window.addEventListener('storage',refresh);
 returnBtn.onclick=function(){const u=validReturn();if(!u)return;u.searchParams.set('boost_complete',mod);u.searchParams.set('boost_nonce',nonce);location.href=u.toString()};
 refresh();
 </script>
+
+<script id="boost-modern-rosie-ui">
+(function(){
+ const modern='https://pinalworkforce1-del.github.io/BOOST_Pathway-Portal/assets/images/rosie-chat-avatar.webp';
+ const selectors='[class*="rosie"] img,[id*="rosie"] img,[class*="narrat"] img,[class*="audio"] img,[class*="chat-avatar"] img';
+ function update(doc){if(!doc)return;doc.querySelectorAll(selectors).forEach(img=>{if(!img.closest('.hero,.heroVisual,.openingMedia,header')&&img.src!==modern)img.src=modern})}
+ const frame=document.getElementById('app');
+ function scan(){try{update(document);update(frame.contentDocument)}catch(_){}}
+ frame.addEventListener('load',()=>{scan();try{new MutationObserver(scan).observe(frame.contentDocument.documentElement,{childList:true,subtree:true})}catch(_){}});
+ document.addEventListener('DOMContentLoaded',scan);
+})();
+</script>
 </body>
 </html>
