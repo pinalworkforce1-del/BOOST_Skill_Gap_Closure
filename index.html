@@ -28,33 +28,6 @@ const JOURNEY='pinal_boost_journey_v1';
 const qs=new URLSearchParams(location.search);
 const ret=qs.get('boost_return'),mod=qs.get('boost_module'),nonce=qs.get('boost_nonce');
 const iframe=document.getElementById('app'),dock=document.getElementById('dock'),returnBtn=document.getElementById('returnBtn'),notice=document.getElementById('notice');
-/* Keep the original planner intact while replacing its retired Riveter intro artwork. */
-const modernRosie='https://pinalworkforce1-del.github.io/BOOST_Pathway-Portal/assets/images/rosie-guide-panel.webp';
-function updatePlannerRosie(){
- try{
-  const doc=iframe.contentDocument;if(!doc)return;
-  doc.querySelectorAll('img').forEach(img=>{
-   const original=img.getAttribute('src')||'';
-   if(/career-investment_00_training-pathways\.png/i.test(original))img.src=modernRosie;
-  });
-  doc.querySelectorAll('[style]').forEach(node=>{
-   const style=node.getAttribute('style')||'';
-   if(style.includes('career-investment_00_training-pathways.png')){
-    node.setAttribute('style',style.replace(/(?:https?:[^)'"]*\/)?(?:assets\/images\/)?career-investment_00_training-pathways\.png/g,modernRosie));
-   }
-  });
- }catch(e){console.warn('Rosie artwork update unavailable',e)}
-}
-iframe.addEventListener('load',()=>{
- updatePlannerRosie();
- try{
-  const doc=iframe.contentDocument;
-  const observer=new MutationObserver(()=>updatePlannerRosie());
-  observer.observe(doc.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['src']});
- }catch(e){}
-});
-
-
 function read(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch(_){return null}}
 function state(){return read(KEY)}
 function validReturn(){if(!ret||!mod||!nonce)return null;try{const u=new URL(ret,location.href);return u.origin===location.origin?u:null}catch(_){return null}}
