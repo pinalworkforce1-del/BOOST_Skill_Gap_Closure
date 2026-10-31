@@ -196,7 +196,7 @@ function patchPlanner(){
           };
           const shared=state()||{};shared.module5=payload;shared.updatedAt=new Date().toISOString();localStorage.setItem(KEY,JSON.stringify(shared));
           const j=read(JOURNEY)||{};j.modules=j.modules||{};j.progress=j.progress||{};j.modules.module5=payload;j.progress.module5='complete';j.updated_at=new Date().toISOString();localStorage.setItem(JOURNEY,JSON.stringify(j));
-          parent.postMessage({type:'boost-module5-saved'},location.origin);
+          parent.postMessage({type:'boost-module5-saved',evidence:payload},location.origin);
         }catch(e){console.error(e);alert('BOOST could not save the Career Investment Results. Please try again.')}
       });
     }
@@ -239,7 +239,7 @@ function refresh(){
   returnBtn.style.display=saved&&validReturn()?'inline-block':'none';
 }
 
-window.addEventListener('message',function(e){if(e.origin!==location.origin||e.data?.type!=='boost-module5-saved')return;refresh();dock.classList.add('show');try{if(parent&&parent!==window)parent.postMessage({type:'boost-module5-saved'},location.origin)}catch(_){}});
+window.addEventListener('message',function(e){if(e.origin!==location.origin||e.data?.type!=='boost-module5-saved')return;refresh();dock.classList.add('show');try{if(parent&&parent!==window)parent.postMessage({type:'boost-module5-saved',evidence:e.data.evidence||state()?.module5||null},'*')}catch(_){}});
 iframe.addEventListener('load',function(){
   try{
     const d=iframe.contentDocument;
