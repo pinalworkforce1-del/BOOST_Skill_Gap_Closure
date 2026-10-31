@@ -138,8 +138,8 @@ function patchPlanner(){
     const eye=compare.querySelector('.eyebrow'),h=compare.querySelector('h2');
     if(eye)eye.textContent='Step 4 • Compare, evaluate, and plan';
     if(h)h.textContent='Compare programs and evaluate the investment';
-    const wage=d.getElementById('currentWage');if(wage&&ev.wage){wage.value=String(ev.wage);wage.dispatchEvent(new Event('input',{bubbles:true}))}
-    const wageLabel=d.querySelector('label[for="currentWage"]');if(wageLabel)wageLabel.textContent='Current or recent hourly wage (carried forward when available)';
+    const wage=d.getElementById('currentWage');if(wage){if(ev.wage){wage.value=String(ev.wage);wage.dispatchEvent(new Event('input',{bubbles:true}))}wage.readOnly=true;wage.setAttribute('aria-readonly','true')}
+    const wageLabel=d.querySelector('label[for="currentWage"]');if(wageLabel)wageLabel.textContent='Current or recent hourly wage (from Module 2 — read only)';
     const outlook=d.getElementById('outlook');
     if(outlook){
       const roi=d.createElement('div');roi.id='boostROIGuardrail';roi.className='boostROINote';outlook.appendChild(roi);
